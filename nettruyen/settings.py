@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
+import dj_database_url
+import environ
 from pathlib import Path
 import os
 
@@ -38,6 +40,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'comic',
+    'user',
+    'review'
 ]
 
 MIDDLEWARE = [
@@ -81,12 +86,10 @@ WSGI_APPLICATION = 'nettruyen.wsgi.application'
 #     }
 # }
 
-import environ
 env = environ.Env()
 environ.Env.read_env()
 
 # Postgres database (live)
-import dj_database_url
 DATABASES = {
     'default': dj_database_url.parse(env('DATABASE_URL'))
 }
