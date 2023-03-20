@@ -12,7 +12,8 @@ from .serializers import UserSerializer, blacklistTokenSerializer
 from .utils import get_tokens_for_user
 import jwt
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
-
+from django.core.mail import send_mail
+from django.conf import settings
 # Create your views here.
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -43,7 +44,15 @@ def sendEmailResetPassword(request):
     try:
         user = MyUser.objects.get(email=email)
         token = get_tokens_for_user(user)
-        return JsonResponse(token)
+        subject = "RESET PASSWORD NETTRUYEN"
+        linkToResetPassword = token["token"]
+        message = f'Hi {user.username}, click here to set new password: {linkToResetPassword}  '
+        email_from = settings.EMAIL_HOST_USER
+        receive_email = [user.email]
+        print(message)
+        send_mail(subject, message, email_from, receive_email)
+
+        return JsonResponse({"message": "Check your email"})
     except MyUser.DoesNotExist:
         return Response({"message": "User does not exist"}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
