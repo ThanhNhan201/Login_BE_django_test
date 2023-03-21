@@ -8,7 +8,7 @@ class MyUser(AbstractUser):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    avatar_url = models.URLField(blank=True)
+    avatar = models.ImageField(upload_to='avatar/', default='avatar/default.jpg')
     fullname = models.CharField(max_length=255)
 
     def __str__(self):

@@ -63,12 +63,15 @@ def resetPassword(request):
     token = request.data.get('token')
     resetPassword = request.data.get('password')
     try:
+        if not token: return JsonResponse({"message": "Please enter token"}) 
+        if not user: return JsonResponse({"message": "Not exist user"}) 
+        if not resetPassword: return JsonResponse({"message": "Please enter password"}) 
+
+
         payload = jwt.decode(token, "secret", algorithms=['HS256'])
         user_id = payload['user_id']
         user = MyUser.objects.get(pk=user_id)
 
-        if not user: return JsonResponse({"message": "Not exist user"}) 
-        if not resetPassword: return JsonResponse({"message": "Please enter password"}) 
 
         user.set_password(resetPassword)
         user.save()
