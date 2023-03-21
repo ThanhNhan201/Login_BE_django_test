@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'user.apps.UserConfig',
+    'comic.apps.ComicConfig',
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt.token_blacklist'
@@ -160,7 +161,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# AUTH_USER_MODEL = 'user.MyUser'
+AUTH_USER_MODEL = 'user.MyUser'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
