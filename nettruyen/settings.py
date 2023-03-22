@@ -70,9 +70,8 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": False,
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": False,
-
     "ALGORITHM": "HS256",
-    # "SIGNING_KEY": settings.SECRET_KEY,
+    "SIGNING_KEY": "secret",
     "VERIFYING_KEY": "",
     "AUDIENCE": None,
     "ISSUER": None,
@@ -123,9 +122,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'nettruyen.wsgi.application'
-
-
-# Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 # DATABASES = {
@@ -135,10 +131,12 @@ WSGI_APPLICATION = 'nettruyen.wsgi.application'
 #     }
 # }
 
+# Postgres database (live)
+
+
 env = environ.Env()
 environ.Env.read_env()
 
-# Postgres database (live)
 DATABASES = {
     'default': dj_database_url.parse(env('DATABASE_URL'))
 }
@@ -223,3 +221,11 @@ CORS_ALLOW_HEADERS = [
     "x-csrftoken",
     "x-requested-with",
 ]
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'haphanbaominh9674@gmail.com'
+EMAIL_HOST_PASSWORD = 'minh1292002'
+EMAIL_USE_TLS = True
