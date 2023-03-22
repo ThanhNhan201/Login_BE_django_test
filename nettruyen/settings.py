@@ -31,6 +31,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+TIME_ZONE = 'UTC'
 
 # Application definition
 
@@ -42,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'user.apps.UserConfig',
+    'comic.apps.ComicConfig',
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt.token_blacklist'
@@ -159,7 +161,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# AUTH_USER_MODEL = 'user.MyUser'
+AUTH_USER_MODEL = 'user.MyUser'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
@@ -222,10 +224,12 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
-
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'haphanbaominh9674@gmail.com'
-EMAIL_HOST_PASSWORD = 'minh1292002'
 EMAIL_USE_TLS = True
+EMAIL_PORT = 587
+# EMAIL_HOST_USER = 'minhhpbse160216@fpt.edu.vn'
+# EMAIL_HOST_PASSWORD = "minh1292002"
+
+MEDIA_URL = '/nettruyen/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'nettruyen/media/')
