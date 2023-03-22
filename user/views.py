@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status, generics, permissions
 from user.models import MyUser
 from django.contrib.auth.models import User
-from .serializers import UserSerializer, blacklistTokenSerializer
+from .serializers import UserSerializer, FollowSerializer
 from .utils import get_tokens_for_user
 from rest_framework_simplejwt.exceptions import TokenError
 # import jwt
@@ -137,11 +137,13 @@ def logout(request):
         return JsonResponse({"message": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
 
 # GET - api/comics/follow
-@api_view(['POST'])
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def comicFollow(reqest):
-    user = reqest.user
-    
-
+def comicFollow(request):
+    user = request.user
+    follows = user.follow_set.all()
+    serializer = FollowSerializer(instance=follows, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+ 
 def index(request):
     return HttpResponse("user")

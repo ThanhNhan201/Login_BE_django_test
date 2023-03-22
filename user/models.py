@@ -12,11 +12,11 @@ class MyUser(AbstractUser):
     fullname = models.CharField(max_length=255)
     
     def __str__(self):
-        return self.username
+        return f"{self.username} {self.is_active}"
 
-class Follow(AbstractUser):
+class Follow(models.Model):
     unfollow = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(MyUser, on_delete=models.CASCADE, related_name='followers')   
-    comic = models.ForeignKey(Comic, on_delete=models.CASCADE, related_name='follow_comic')
+    user = models.ForeignKey(MyUser, on_delete=models.CASCADE)   
+    comic = models.ForeignKey(Comic, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(auto_now=True)

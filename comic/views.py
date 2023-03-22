@@ -74,4 +74,4 @@ def top_views_by_date(request):
 
     return top_views
 
-
+ 
