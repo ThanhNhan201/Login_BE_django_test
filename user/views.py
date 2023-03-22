@@ -24,8 +24,22 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         # Add custom claims
         token['username'] = user.username
         # ...
-
+ 
         return token
+    
+    def validate(self, attrs):
+        data = super().validate(attrs)
+
+        # Add user information to response data
+        data['user'] = {
+            'id': self.user.id,
+            'username': self.user.username,
+            'email': self.user.email,
+            'avatar': self.user.avatar.url,
+            # add other user information fields as needed
+        }
+
+        return data
 
 
 class MyTokenObtainPairView(TokenObtainPairView):

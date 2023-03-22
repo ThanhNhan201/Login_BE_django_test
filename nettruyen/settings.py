@@ -31,6 +31,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+TIME_ZONE = 'UTC'
 
 # Application definition
 
@@ -228,8 +229,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'minhhpbse160216@fpt.edu.vn'
-EMAIL_HOST_PASSWORD = "minh1292002"
+# EMAIL_HOST_USER = 'minhhpbse160216@fpt.edu.vn'
+# EMAIL_HOST_PASSWORD = "minh1292002"
 
-MEDIA_URL = '/user/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'user/media/')
+MEDIA_URL = '/nettruyen/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'nettruyen/media/')
