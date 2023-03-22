@@ -17,3 +17,4 @@ class FollowSerializer(ModelSerializer):
         model = Follow
         fields = ('comic',)
         depth = 1
+ 

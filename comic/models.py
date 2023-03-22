@@ -34,6 +34,9 @@ class Comic(models.Model):
     comment = models.IntegerField(default=0, null=False)
     chap = models.IntegerField(default=0, null=False)
     view = models.IntegerField(default=0, null=False)
+    view_day = models.IntegerField(default=0, null=False)
+    view_week = models.IntegerField(default=0, null=False)
+    view_month = models.IntegerField(default=0, null=False)
     genres = models.ManyToManyField(Genre)
 
     def __str__(self):

@@ -20,3 +20,7 @@ class Follow(models.Model):
     user = models.ForeignKey(MyUser, on_delete=models.CASCADE)   
     comic = models.ForeignKey(Comic, on_delete=models.CASCADE)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username} {self.comic.name}"
+ 
