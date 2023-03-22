@@ -43,5 +43,4 @@ class Comic(models.Model):
         return f"{self.name} {self.view} {self.chap} {self.rating} (updated_at {self.updated_at}) (create_at {self.created_at}) {self.status}"
     
 
-
     
