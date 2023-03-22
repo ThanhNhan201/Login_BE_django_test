@@ -5,11 +5,19 @@ from .serializers import ComicSerializer, GenreSerializer
 from django.core import serializers
 from django.http import HttpResponse, JsonResponse
 from django.core.exceptions import FieldError
+from django.utils import timezone
+from datetime import timedelta, datetime
+from django.db.models import Q
+from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 def index(request):
     return HttpResponse("comics")
 
-def getComicByView(request, page_num, sort_field):
+# GET - api/comics/<sort_field>/<page_num>
+def getComicBySortFiled(request, page_num, sort_field):
+
     try:
         comicsSofted = Comic.objects.all().order_by(sort_field)
         paginator = Paginator(comicsSofted, 36)
@@ -52,3 +60,18 @@ def getComicByView(request, page_num, sort_field):
         serialized_comics.append(serialized_comic)
 
     return JsonResponse(serialized_comics, safe=False)
+
+# GET - api/comics/<sort_field>/<sort_date_range>/<page_num>
+def top_views_by_date(request):
+    date = datetime('2023', '03', '21')
+    start_date = timezone.make_aware(date, timezone.get_current_timezone())
+    end_date = start_date + timedelta(days=1)
+
+    top_views = Comic.objects.filter(
+        created_at__gte=start_date,
+        created_at__lt=end_date
+    ).order_by('-view')[:10]
+
+    return top_views
+
+ 

@@ -1,16 +1,17 @@
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
+from rest_framework import status, generics, permissions
 from user.models import MyUser
 from django.contrib.auth.models import User
-from .serializers import UserSerializer, blacklistTokenSerializer
+from .serializers import UserSerializer, FollowSerializer
 from .utils import get_tokens_for_user
-import jwt
+from rest_framework_simplejwt.exceptions import TokenError
+# import jwt
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from django.core.mail import send_mail
 from django.conf import settings
@@ -23,6 +24,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         # Add custom claims
         token['username'] = user.username
+        token['id'] = user.id
         # ...
  
         return token
@@ -40,7 +42,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         }
 
         return data
-
 
 class MyTokenObtainPairView(TokenObtainPairView):
     try:
@@ -99,6 +100,50 @@ def resetPassword(request):
     except jwt.ExpiredSignatureError as error:
         return JsonResponse({"message": str(error.message)})
 
+# POST - /api/users/register
+@api_view(['POST'])
+def create_user(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    email = request.data.get('email')
 
+    if not username or not password or not email:
+        return Response({'error': 'Please provide username, password and email.'},
+                        status=status.HTTP_400_BAD_REQUEST)
+    try:
+        # Create the user object
+        user = MyUser.objects.create_user(
+            username=username, email=email, password=password)
+        user.save()
+
+        return Response({'success': 'User created successfully!'}, status=status.HTTP_201_CREATED)
+
+    except:
+        return Response({'error': 'Unable to create user. Please try again.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+# POST - /api/users/logout
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout(request):
+    try:
+        refreshToken = request.data.get('refresh_token')
+        print(refreshToken)
+        if not refreshToken: return JsonResponse({"message": "Please enter token"}) 
+        tokenFormat = RefreshToken(refreshToken, verify=True)
+        tokenFormat.blacklist()
+
+        return JsonResponse({'message': "Logout!"}, status=status.HTTP_204_NO_CONTENT)
+    except TokenError as error:
+        return JsonResponse({"message": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
+
+# GET - api/comics/follow
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def comicFollow(request):
+    user = request.user
+    follows = user.follow_set.all()
+    serializer = FollowSerializer(instance=follows, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+ 
 def index(request):
     return HttpResponse("user")

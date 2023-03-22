@@ -124,9 +124,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'nettruyen.wsgi.application'
-
-
-# Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 # DATABASES = {
@@ -136,10 +133,12 @@ WSGI_APPLICATION = 'nettruyen.wsgi.application'
 #     }
 # }
 
+# Postgres database (live)
+
+
 env = environ.Env()
 environ.Env.read_env()
 
-# Postgres database (live)
 DATABASES = {
     'default': dj_database_url.parse(env('DATABASE_URL'))
 }
