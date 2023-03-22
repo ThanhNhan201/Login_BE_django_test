@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage
-from .models import Comic, Genre
-from .serializers import ComicSerializer, GenreSerializer
+from .models import Comic, Genre, Chap
+from .serializers import ComicSerializer, GenreSerializer, ChapSerializer
 from django.core import serializers
 from django.http import HttpResponse, JsonResponse
 from django.core.exceptions import FieldError
@@ -11,6 +11,7 @@ from django.db.models import Q
 from rest_framework.decorators import api_view
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Subquery, OuterRef
 
 def index(request):
     return HttpResponse("comics")
@@ -19,8 +20,9 @@ def index(request):
 def getComicBySortFiled(request, page_num, sort_field):
 
     try:
+    # Get newest chap 
         comicsSofted = Comic.objects.all().order_by(sort_field)
-        paginator = Paginator(comicsSofted, 36)
+        paginator = Paginator(comicsSofted, 10)
         page_comic = paginator.page(page_num)
 
     except FieldError:
@@ -40,6 +42,9 @@ def getComicBySortFiled(request, page_num, sort_field):
             }
             serialized_genres.append(serialized_genre)
 
+            latest_chaps = Chap.objects.filter(comic=comic).order_by('-updated_at')[:3]
+            serialized_chap = ChapSerializer(instance=latest_chaps, many=True)
+
         serialized_comic = {
             'id': comic.id,
             'name': comic.name,
@@ -51,6 +56,7 @@ def getComicBySortFiled(request, page_num, sort_field):
             'follower': comic.follower,
             'comment': comic.comment,
             'chap': comic.chap,
+            "latest_chaps": serialized_chap.data
             # 'sumary': comic.sumary,
             # 'status': comic.status,
             # 'genres': serialized_genres,
@@ -61,17 +67,3 @@ def getComicBySortFiled(request, page_num, sort_field):
 
     return JsonResponse(serialized_comics, safe=False)
 
-# GET - api/comics/<sort_field>/<sort_date_range>/<page_num>
-def top_views_by_date(request):
-    date = datetime('2023', '03', '21')
-    start_date = timezone.make_aware(date, timezone.get_current_timezone())
-    end_date = start_date + timedelta(days=1)
-
-    top_views = Comic.objects.filter(
-        created_at__gte=start_date,
-        created_at__lt=end_date
-    ).order_by('-view')[:10]
-
-    return top_views
-
- 
