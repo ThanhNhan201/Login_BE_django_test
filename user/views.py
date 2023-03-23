@@ -6,15 +6,17 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status, generics, permissions
-from user.models import MyUser
+from user.models import MyUser, Follow
 from django.contrib.auth.models import User
-from .serializers import UserSerializer, FollowSerializer
+from .serializers import UserSerializer, FollowSerializer, FollowSerializerFull
 from .utils import get_tokens_for_user
 from rest_framework_simplejwt.exceptions import TokenError
-# import jwt
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from django.core.mail import send_mail
 from django.conf import settings
+from comic.models import Comic
+from django.shortcuts import get_object_or_404
+
 # Create your views here.
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -42,7 +44,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         }
 
         return data
-
 class MyTokenObtainPairView(TokenObtainPairView):
     try:
         serializer_class = MyTokenObtainPairSerializer
@@ -136,14 +137,54 @@ def logout(request):
     except TokenError as error:
         return JsonResponse({"message": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
 
-# GET - api/comics/follow
-@api_view(['GET'])
+# GET/POST - api/comics/follow
+@api_view(['GET', 'POST', "DELETE"])
 @permission_classes([IsAuthenticated])
 def comicFollow(request):
     user = request.user
-    follows = user.follow_set.all()
-    serializer = FollowSerializer(instance=follows, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
- 
+    # GET follow comic
+    if request.method == 'GET':
+        follows = user.follow_set.all()
+        serializer = FollowSerializer(instance=follows, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    # POST create follow
+    if request.method == 'POST':
+        if not request.data.get("comic_id"): return JsonResponse({'message': "Please enter comic_id"}, status=status.HTTP_400_BAD_REQUEST)
+        comic_id = request.data.get("comic_id")
+        comic = get_object_or_404(Comic, pk=comic_id)
+        follow = Follow.objects.filter(user=user, comic=comic).first()
+        # If exist follow in DB just change status
+        if follow:
+            follow.unfollow = False
+            follow.save()
+            serializer = FollowSerializer(instance=follow)
+            return JsonResponse({"message": "Success!"}, status=status.HTTP_200_OK)
+
+        
+        # If not exist
+        follow_data = {
+            'user': user.id,
+            'comic': comic_id
+        }
+        
+        follow_serializer = FollowSerializerFull(data=follow_data)
+        if follow_serializer.is_valid():
+            follow_serializer.save()
+            return JsonResponse({"message": "Success!"}, status=status.HTTP_200_OK)
+        return Response(follow_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == "DELETE":
+        if not request.data.get("comic_id"): return JsonResponse({'message': "Please enter comic_id"}, status=status.HTTP_400_BAD_REQUEST)
+        comic_id = request.data.get("comic_id")
+        comic = get_object_or_404(Comic, pk=comic_id)
+        follow = Follow.objects.filter(user=user, comic=comic).first()
+        # If exist follow in DB just change status
+        if follow:
+            follow.unfollow = True
+            follow.save()
+            serializer = FollowSerializer(instance=follow)
+            return JsonResponse({"message": "Success!"}, status=status.HTTP_200_OK)
+
 def index(request):
     return HttpResponse("user")

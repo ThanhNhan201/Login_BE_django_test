@@ -34,6 +34,7 @@ ALLOWED_HOSTS = []
 TIME_ZONE = 'UTC'
 
 # Application definition
+AUTH_USER_MODEL = 'user.MyUser'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -42,8 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'user.apps.UserConfig',
-    'comic.apps.ComicConfig',
+    'user',
+    'comic',
     'rest_framework',
     'corsheaders',
     'rest_framework_simplejwt.token_blacklist'

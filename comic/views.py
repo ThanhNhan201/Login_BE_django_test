@@ -1,16 +1,15 @@
-from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage
-from .models import Comic, Genre
-from .serializers import ComicSerializer, GenreSerializer
-from django.core import serializers
+from .models import Comic, Genre, Chap
+from .serializers import ComicSerializer, ChapSerializer
 from django.http import HttpResponse, JsonResponse
 from django.core.exceptions import FieldError
 from django.utils import timezone
-from datetime import timedelta, datetime
 from django.db.models import Q
 from rest_framework.decorators import api_view
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view
+from rest_framework import status
+from rest_framework.response import Response
+
 
 def index(request):
     return HttpResponse("comics")
@@ -19,6 +18,7 @@ def index(request):
 def getComicBySortFiled(request, page_num, sort_field):
 
     try:
+    # Get newest chap 
         comicsSofted = Comic.objects.all().order_by(sort_field)
         paginator = Paginator(comicsSofted, 10)
         page_comic = paginator.page(page_num)
@@ -40,38 +40,37 @@ def getComicBySortFiled(request, page_num, sort_field):
             }
             serialized_genres.append(serialized_genre)
 
+            latest_chaps = Chap.objects.filter(comic=comic).order_by('-updated_at')[:3]
+            serialized_chap = ChapSerializer(instance=latest_chaps, many=True)
+
         serialized_comic = {
             'id': comic.id,
             'name': comic.name,
-            'other_name': comic.other_name,
             'created_at': comic.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             'updated_at': comic.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
             'view': comic.view,
             'rating': comic.rating,
-            'author': comic.author,
             'image': comic.image.url,
-            'follower': comic.follower,
+            'follower': comic.follower, 
             'comment': comic.comment,
             'chap': comic.chap,
-            'sumary': comic.sumary,
-            'status': comic.status,
-            'genres': serialized_genres,
+            "latest_chaps": serialized_chap.data
+            # 'sumary': comic.sumary,
+            # 'status': comic.status,
+            # 'genres': serialized_genres,
+            # 'other_name': comic.other_name,
+            # 'author': comic.author,
         }
         serialized_comics.append(serialized_comic)
 
     return JsonResponse(serialized_comics, safe=False)
 
-# GET - api/comics/<sort_field>/<sort_date_range>/<page_num>
-def top_views_by_date(request):
-    date = datetime('2023', '03', '21')
-    start_date = timezone.make_aware(date, timezone.get_current_timezone())
-    end_date = start_date + timedelta(days=1)
+# GET - api/comics/<comic_id>
+@api_view(['GET'])
+def getComicDetail(request, comic_id):
+    comic = Comic.objects.get(pk=comic_id)
+    if not comic: return JsonResponse({'error': 'Not exist comic'}, status=400)
 
-    top_views = Comic.objects.filter(
-        created_at__gte=start_date,
-        created_at__lt=end_date
-    ).order_by('-view')[:10]
+    serialized_comic = ComicSerializer(instance=comic)
 
-    return top_views
-
- 
+    return Response(serialized_comic.data, status=status.HTTP_200_OK)
