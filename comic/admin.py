@@ -5,7 +5,7 @@ admin.site.register(Genre)
 # admin.site.register(Chap)
 #  return f"{self.name} {self.view} {self.chap} {self.rating} {self.status}"
 class ComicAdmin(admin.ModelAdmin):
-    list_display = ("name", "view", "chap", "rating","updated_at", "created_at" ,"status")
+    list_display = ("id","name", "view", "chap", "rating","updated_at", "created_at" ,"status")
 admin.site.register(Comic, ComicAdmin)
 
 class ChapAdmin(admin.ModelAdmin):

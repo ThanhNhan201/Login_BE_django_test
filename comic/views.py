@@ -1,17 +1,15 @@
-from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage
 from .models import Comic, Genre, Chap
-from .serializers import ComicSerializer, GenreSerializer, ChapSerializer
-from django.core import serializers
+from .serializers import ComicSerializer, ChapSerializer
 from django.http import HttpResponse, JsonResponse
 from django.core.exceptions import FieldError
 from django.utils import timezone
-from datetime import timedelta, datetime
 from django.db.models import Q
 from rest_framework.decorators import api_view
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from django.db.models import Subquery, OuterRef
+from rest_framework.decorators import api_view
+from rest_framework import status
+from rest_framework.response import Response
+
 
 def index(request):
     return HttpResponse("comics")
@@ -53,7 +51,7 @@ def getComicBySortFiled(request, page_num, sort_field):
             'view': comic.view,
             'rating': comic.rating,
             'image': comic.image.url,
-            'follower': comic.follower,
+            'follower': comic.follower, 
             'comment': comic.comment,
             'chap': comic.chap,
             "latest_chaps": serialized_chap.data
@@ -67,3 +65,12 @@ def getComicBySortFiled(request, page_num, sort_field):
 
     return JsonResponse(serialized_comics, safe=False)
 
+# GET - api/comics/<comic_id>
+@api_view(['GET'])
+def getComicDetail(request, comic_id):
+    comic = Comic.objects.get(pk=comic_id)
+    if not comic: return JsonResponse({'error': 'Not exist comic'}, status=400)
+
+    serialized_comic = ComicSerializer(instance=comic)
+
+    return Response(serialized_comic.data, status=status.HTTP_200_OK)

@@ -1,5 +1,6 @@
 from django.db import models
 # Create your models here.
+from django.apps import apps
 
 class Genre(models.Model):
     name = models.CharField(max_length=255)
@@ -22,7 +23,7 @@ class Comic(models.Model):
 
     name = models.CharField(max_length=255, null=False)
     other_name = models.CharField(max_length=255, blank=True)
-    author = models.CharField(max_length=255, null=False)
+    author = models.CharField(max_length=255, null=False, default=None)
     sumary = models.CharField(max_length=255, null=False)
     created_at = models.DateTimeField(auto_now_add=True, null=False)
     updated_at = models.DateTimeField(auto_now=True, null=False)
@@ -40,7 +41,7 @@ class Comic(models.Model):
     genres = models.ManyToManyField(Genre)
 
     def __str__(self):
-        return f"{self.name} {self.view} {self.chap} {self.rating} {self.updated_at} {self.created_at} {self.status}"
+        return f"{self.id} {self.name} {self.view} {self.chap} {self.rating} {self.updated_at} {self.created_at} {self.status}"
     
 class Chap(models.Model):
     chap_num = models.IntegerField(blank=False)
