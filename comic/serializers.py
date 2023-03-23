@@ -65,10 +65,10 @@ class CommentPostSerializer(ModelSerializer):
 class CommentPutSerializer(ModelSerializer):
     class Meta:
         model = Comment
-        fields = ('id','content')
+        fields = ('id', 'content')
 
 
 class RatingSerializer(ModelSerializer):
     class Meta:
         model = Rating
-        fields = ('id', 'user', 'movie', 'stars')
+        fields = ('id', 'user', 'comic', 'stars')

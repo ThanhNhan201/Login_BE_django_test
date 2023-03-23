@@ -1,7 +1,7 @@
 from django.core.paginator import Paginator, EmptyPage
-from .models import Comic, Genre, Chap, Comment
+from .models import Comic, Genre, Chap, Comment, Rating
 from .serializers import ComicSerializer, ChapSerializer, CommentSerializer, CommentPostSerializer
-from .serializers import CommentPutSerializer
+from .serializers import CommentPutSerializer, RatingSerializer
 from django.http import HttpResponse, JsonResponse
 from django.core.exceptions import FieldError
 from django.utils import timezone
@@ -10,6 +10,7 @@ from rest_framework.decorators import api_view
 from rest_framework import status, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.db.models import Avg
 
 
 def index(request):
@@ -84,33 +85,20 @@ class CommentAPI(generics.ListCreateAPIView):
     def get(self, request, id):
         # user = request.user.username
         comments = Comment.objects.filter(comic=id, removed=False).order_by('-created_at')
-        serializer = CommentSerializer(comments, many=True)
-        return Response(serializer.data, status=200)
+        serializer_comment = CommentSerializer(comments, many=True)
+        return Response(serializer_comment.data, status=200)
 
     def post(self, request, id):
 
-        comics = Comic.objects.get(comic=id)
-        # if request.user.is_authenticated:
-        # data = request.data
-        # comic = id,
-        # user = request.user
-        # chap = request.data.get('chap')
-        # content = request.data.get('content')
-        # user = request.data.get('user')
-        # data = Comment.objects.create(
-        #     comic=comic,
-        #     user=user,
-        #     chap=chap,
-        #     content=content
-        # )
-        serializer = CommentPostSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.comic = id
-            serializer.save()
+        comics = Comic.objects.get(id=id)
+        serializer_comment = CommentPostSerializer(data=request.data)
+        if serializer_comment.is_valid():
+            serializer_comment.comic = id
+            serializer_comment.save()
             comics.comment = comics.comment + 1
             comics.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer_comment.data, status=status.HTTP_201_CREATED)
+        return Response(serializer_comment.data, status=status.HTTP_400_BAD_REQUEST)
         # return Response({'msg': 'user not authenticated'})
 
 #1 fields content can update
@@ -121,29 +109,44 @@ def PutComment(request, comic_id, cmt_id):
             cmt = Comment.objects.get(comic=comic_id, id=cmt_id)
             if (cmt.removed == True):
                 return Response({'msg': 'this comment is deleted'}, status=400)
-        except Cmt.DoesNotExist:
+        except cmt.DoesNotExist:
             return Response({'msg': 'this comment not found'}, status=400)
+        cmt.edited = True
         serializer = CommentPutSerializer(cmt, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=200)
         return Response(serializer.errors, status=400)
+
     elif request.method == 'DELETE':
         try:
             cmt = Comment.objects.get(comic=comic_id, id=cmt_id)
             if(cmt.removed == True):
                 return Response({'msg': 'this comment is deleted'}, status=400)
-        except Cmt.DoesNotExist:
+        except cmt.DoesNotExist:
             return Response({'msg': 'this comment not found'}, status=400)
         cmt.removed = True
-        serializer = CommentSerializer(data=cmt)
-        if serializer.is_valid():
-            serializer.save()
+        serializer_comment = CommentSerializer(data=cmt)
+        if serializer_comment.is_valid():
+            serializer_comment.save()
         cmt.save()
         return Response({'msg': 'deleted'}, status=status.HTTP_204_NO_CONTENT)
 
-@api_view (['POST'])
-def RateViewAPI(request, )
-
-
+class RateViewAPI(generics.ListCreateAPIView):
+    queryset = Rating.objects.filter(removed=False).order_by('-created_at')
+    serializer_class = RatingSerializer
+    def post(self, request, id):
+            # rate = Rating.objects.get(comic=comic_id)
+        user = request.user
+        serializer_rating = RatingSerializer(data=request.data)
+        if serializer_rating.is_valid():
+            serializer_rating.save()
+            return Response(serializer_rating.data, status=200)
+        return Response(serializer_rating.data, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request, comic_id):
+        comic = Comic.objects.get(id=id)
+        rate = Rating.objects.get(comic=id)
+        counts = Rating.objects.filter(comic=comic_id, removed=False).count()
+        comic.rating = ((comic.rating * counts) + rate.stars)/ (counts + 1)
+        return Response(comic.rating)
 

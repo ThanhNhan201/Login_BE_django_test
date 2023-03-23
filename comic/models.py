@@ -79,3 +79,6 @@ class Rating (models.Model):
     class Meta:
         unique_together = (('user', 'comic'),)
         index_together = (('user', 'comic'),)
+
+    def __str__(self):
+        return f'{self.user} - {self.comic}'
