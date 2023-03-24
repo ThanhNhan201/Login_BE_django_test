@@ -82,24 +82,31 @@ def getComicDetail(request, comic_id):
 class CommentAPI(generics.ListCreateAPIView):
     queryset = Comment.objects.all().order_by('-created_at')
     serializer_class = CommentPostSerializer
-    def get(self, request, id):
+    def get(self, request, id, id_chap):
         # user = request.user.username
         comments = Comment.objects.filter(comic=id, removed=False).order_by('-created_at')
         serializer_comment = CommentSerializer(comments, many=True)
         return Response(serializer_comment.data, status=200)
 
-    def post(self, request, id):
-
+    def post(self, request, id, id_chap):
         comics = Comic.objects.get(id=id)
-        serializer_comment = CommentPostSerializer(data=request.data)
-        if serializer_comment.is_valid():
-            serializer_comment.comic = id
-            serializer_comment.save()
-            comics.comment = comics.comment + 1
-            comics.save()
+        content = request.data.get('content')
+        if request.user.is_authenticated:
+            user = request.user
+            data = Comment.objects.create(
+                user=user,
+                comic_id=id,
+                chap_id=id_chap,
+                content=content,
+            )
+            data.save()
+            serializer_comment = CommentPostSerializer(data=data)
+            if serializer_comment.is_valid():
+                serializer_comment.save()
+                comics.comment = comics.comment + 1
+                comics.save()
             return Response(serializer_comment.data, status=status.HTTP_201_CREATED)
-        return Response(serializer_comment.data, status=status.HTTP_400_BAD_REQUEST)
-        # return Response({'msg': 'user not authenticated'})
+        return Response({'msg': 'user not authenticated'})
 
 #1 fields content can update
 @api_view(['PUT', 'DELETE'])
@@ -108,7 +115,7 @@ def PutComment(request, comic_id, cmt_id):
         try:
             cmt = Comment.objects.get(comic=comic_id, id=cmt_id)
             if (cmt.removed == True):
-                return Response({'msg': 'this comment is deleted'}, status=400)
+                return Response({'msg': 'this comment was deleted'}, status=400)
         except cmt.DoesNotExist:
             return Response({'msg': 'this comment not found'}, status=400)
         cmt.edited = True
@@ -122,7 +129,7 @@ def PutComment(request, comic_id, cmt_id):
         try:
             cmt = Comment.objects.get(comic=comic_id, id=cmt_id)
             if(cmt.removed == True):
-                return Response({'msg': 'this comment is deleted'}, status=400)
+                return Response({'msg': 'this comment was deleted'}, status=400)
         except cmt.DoesNotExist:
             return Response({'msg': 'this comment not found'}, status=400)
         cmt.removed = True
@@ -135,18 +142,29 @@ def PutComment(request, comic_id, cmt_id):
 class RateViewAPI(generics.ListCreateAPIView):
     queryset = Rating.objects.filter(removed=False).order_by('-created_at')
     serializer_class = RatingSerializer
-    def post(self, request, id):
-            # rate = Rating.objects.get(comic=comic_id)
-        user = request.user
-        serializer_rating = RatingSerializer(data=request.data)
-        if serializer_rating.is_valid():
-            serializer_rating.save()
-            return Response(serializer_rating.data, status=200)
-        return Response(serializer_rating.data, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request, comic_id):
+        stars = request.data.get('stars')
+        if request.user.is_authenticated:
+            user = request.user
+            data = Rating.objects.create(
+                user=user,
+                comic_id=comic_id,
+                stars=stars,
+            )
+            data.save()
+            serializer_rating = RatingSerializer(data=data)
+            if serializer_rating.is_valid():
+                serializer_rating.save()
+                return Response(serializer_rating.data, status=200)
+            # return Response(serializer_rating.data, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'msg': 'user not authenticated'})
     def get(self, request, comic_id):
-        comic = Comic.objects.get(id=id)
-        rate = Rating.objects.get(comic=id)
-        counts = Rating.objects.filter(comic=comic_id, removed=False).count()
-        comic.rating = ((comic.rating * counts) + rate.stars)/ (counts + 1)
-        return Response(comic.rating)
+        comics = Comic.objects.get(id=comic_id)
+        rates = Rating.objects.filter(comic=comic_id, removed=False).aggregate(Avg('stars'))['stars__avg']
+        comics.rating = rates
+        print(comics.rating)
+        comics.save()
+        return Response(rates, status=200)
+
+
 

@@ -62,6 +62,11 @@ class CommentPostSerializer(ModelSerializer):
         model = Comment
         fields = ('comic', 'content', 'chap', 'user')
 
+    def set_comic_id(self, id):
+        return {
+            'comic': id,
+        }
+
 class CommentPutSerializer(ModelSerializer):
     class Meta:
         model = Comment

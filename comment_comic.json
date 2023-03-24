@@ -8,8 +8,9 @@
 	},
 	"item": [
 		{
-			"name": "put_cmt",
+			"name": "get_cmt",
 			"protocolProfileBehavior": {
+				"disableBodyPruning": true,
 				"disabledSystemHeaders": {}
 			},
 			"request": {
@@ -28,7 +29,7 @@
 						}
 					]
 				},
-				"method": "PUT",
+				"method": "GET",
 				"header": [
 					{
 						"key": "Authorization",
@@ -42,13 +43,14 @@
 					"formdata": [
 						{
 							"key": "content",
-							"value": "ok3",
-							"type": "text"
+							"value": "ok2",
+							"type": "text",
+							"disabled": true
 						}
 					]
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8000/api/comics/cmt/2/3",
+					"raw": "http://127.0.0.1:8000/api/comics/cmt/1/2",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -61,8 +63,8 @@
 						"api",
 						"comics",
 						"cmt",
-						"2",
-						"3"
+						"1",
+						"2"
 					]
 				}
 			},
@@ -100,19 +102,38 @@
 			]
 		},
 		{
-			"name": "get_cmt_theo_comicid",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
+			"name": "post_cmt_theo_comicid_chapid",
 			"request": {
-				"method": "GET",
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjc5NjQ1NDQ3LCJpYXQiOjE2Nzk2NDI0NDcsImp0aSI6ImI1YjY2MjMzN2MyOTRkMGRhNDA0MzExMTY5ZWYzNzU1IiwidXNlcl9pZCI6MiwidXNlcm5hbWUiOiJuaGFuIiwiaWQiOjJ9.RhojVTbc5Y3jELgew4NQe1lRIJQJRGMWWrX2Ve7Gd3s",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "formdata",
-					"formdata": []
+					"formdata": [
+						{
+							"key": "content",
+							"value": "ok chap ",
+							"type": "text"
+						},
+						{
+							"key": "stars",
+							"value": "5",
+							"type": "text",
+							"disabled": true
+						}
+					]
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8000/api/comics/cmt/2",
+					"raw": "http://127.0.0.1:8000/api/comics/cmt/1/2",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -125,6 +146,7 @@
 						"api",
 						"comics",
 						"cmt",
+						"1",
 						"2"
 					]
 				}
@@ -181,11 +203,16 @@
 							"value": "false",
 							"type": "text",
 							"disabled": true
+						},
+						{
+							"key": "",
+							"value": "",
+							"type": "text"
 						}
 					]
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8000/api/comics/cmt/2/3",
+					"raw": "http://127.0.0.1:8000/api/comics/put_cmt/1/35",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -197,9 +224,9 @@
 					"path": [
 						"api",
 						"comics",
-						"cmt",
-						"2",
-						"3"
+						"put_cmt",
+						"1",
+						"35"
 					]
 				}
 			},
@@ -208,35 +235,20 @@
 		{
 			"name": "post_new_cmt",
 			"request": {
-				"method": "POST",
+				"method": "PUT",
 				"header": [],
 				"body": {
 					"mode": "formdata",
 					"formdata": [
 						{
-							"key": "comic",
-							"value": "1",
-							"type": "text"
-						},
-						{
-							"key": "user",
-							"value": "1",
-							"type": "text"
-						},
-						{
-							"key": "chap",
-							"value": "1",
-							"type": "text"
-						},
-						{
 							"key": "content",
-							"value": "cũng được",
+							"value": "oook",
 							"type": "text"
 						}
 					]
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8000/api/comics/cmt/2",
+					"raw": "http://127.0.0.1:8000/api/comics/put_cmt/1/33",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -248,8 +260,9 @@
 					"path": [
 						"api",
 						"comics",
-						"cmt",
-						"2"
+						"put_cmt",
+						"1",
+						"33"
 					]
 				}
 			},

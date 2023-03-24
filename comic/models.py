@@ -56,9 +56,9 @@ class Chap(models.Model):
 
 
 class Comment(models.Model):
-    comic = models.ForeignKey(Comic,  related_name='comic', on_delete=models.CASCADE)
-    chap = models.ForeignKey(Chap, on_delete=models.CASCADE)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    comic = models.ForeignKey(Comic,  related_name='comic', editable=False, on_delete=models.CASCADE)
+    chap = models.ForeignKey(Chap, editable=False, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, editable=False, on_delete=models.CASCADE)
     content = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
@@ -69,8 +69,8 @@ class Comment(models.Model):
         return str(self.comic)
 
 class Rating (models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    comic = models.ForeignKey(Comic, related_name='comic_id', on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, editable=False, on_delete=models.CASCADE)
+    comic = models.ForeignKey(Comic, related_name='comic_id', editable=False, on_delete=models.CASCADE)
     stars = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
     created_at = models.DateTimeField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
