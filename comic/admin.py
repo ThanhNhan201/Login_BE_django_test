@@ -20,3 +20,18 @@ class Comment(admin.ModelAdmin):
 @admin.register(Rating)
 class Comment(admin.ModelAdmin):
     list_display = ('comic', 'user', 'stars')
+
+
+# class ChapImageAdmin(admin.StackedInline):
+#     model = ChapImage
+#
+# @admin.register(Chap)
+# class ChapAdmin(admin.ModelAdmin):
+#     inlines = [ChapImageAdmin]
+#
+#     class Meta:
+#         model = Chap
+#
+# @admin.register(ChapImage)
+# class ChapImageAdmin(admin.ModelAdmin):
+#     pass

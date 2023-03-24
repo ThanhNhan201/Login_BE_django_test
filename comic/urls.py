@@ -10,6 +10,8 @@ urlpatterns = [
     path('/cmt/<int:id>/<int:id_chap>', CommentAPI.as_view()),
     path('/rate/<int:comic_id>', RateViewAPI.as_view()),
     path('/put_cmt/<int:comic_id>/<int:cmt_id>', views.PutComment),
-    path('/<str:sort_field>/<int:page_num>', views.getComicBySortFiled )
+    path('/comic_view/<int:id>', views.comic_view),
+    # path('/comic/<int:comic_id>/images', views.story_images, name='story_images'),
+    path('/<str:sort_field>/<int:page_num>', views.getComicBySortFiled)
 ]
  

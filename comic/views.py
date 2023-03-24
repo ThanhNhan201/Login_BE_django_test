@@ -1,7 +1,9 @@
 from django.core.paginator import Paginator, EmptyPage
+from django.shortcuts import get_object_or_404
+
 from .models import Comic, Genre, Chap, Comment, Rating
 from .serializers import ComicSerializer, ChapSerializer, CommentSerializer, CommentPostSerializer
-from .serializers import CommentPutSerializer, RatingSerializer
+from .serializers import CommentPutSerializer, RatingSerializer, ChapImagesSerializer
 from django.http import HttpResponse, JsonResponse
 from django.core.exceptions import FieldError
 from django.utils import timezone
@@ -79,15 +81,17 @@ def getComicDetail(request, comic_id):
 
 
 ######## COMMENT ###########
+
+#GET API-CMT  /comics/comic_id
 class CommentAPI(generics.ListCreateAPIView):
     queryset = Comment.objects.all().order_by('-created_at')
     serializer_class = CommentPostSerializer
     def get(self, request, id, id_chap):
-        # user = request.user.username
         comments = Comment.objects.filter(comic=id, removed=False).order_by('-created_at')
         serializer_comment = CommentSerializer(comments, many=True)
         return Response(serializer_comment.data, status=200)
 
+    # POST API-CMT  /comics/comic_id/id_chap
     def post(self, request, id, id_chap):
         comics = Comic.objects.get(id=id)
         content = request.data.get('content')
@@ -105,7 +109,8 @@ class CommentAPI(generics.ListCreateAPIView):
                 serializer_comment.save()
                 comics.comment = comics.comment + 1
                 comics.save()
-            return Response(serializer_comment.data, status=status.HTTP_201_CREATED)
+                return Response(serializer_comment.data, status=status.HTTP_201_CREATED)
+            return Response(serializer_comment.errors, status=400)
         return Response({'msg': 'user not authenticated'})
 
 #1 fields content can update
@@ -162,6 +167,8 @@ class RateViewAPI(generics.ListCreateAPIView):
                 return Response(serializer_rating.data, status=200)
             # return Response(serializer_rating.data, status=status.HTTP_400_BAD_REQUEST)
         return Response({'msg': 'user not authenticated'})
+
+#get average stars and save it in comics database
     def get(self, request, comic_id):
         comics = Comic.objects.get(id=comic_id)
         rates = Rating.objects.filter(comic=comic_id, removed=False).aggregate(Avg('stars'))['stars__avg']
@@ -170,5 +177,19 @@ class RateViewAPI(generics.ListCreateAPIView):
         comics.save()
         return Response(rates, status=200)
 
+# @api_view(['GET'])
+# def GetChapComics(request):
+#     ok =
+# import os
+# from django.conf import settings
+# def story_images(request, comic_id):
+#     story_path = os.path.join(settings.MEDIA_ROOT, f'comic_img/comic_{comic_id}/')
+#     images = os.listdir(story_path)
+#     return JsonResponse({'images': images})
 
-
+@api_view(['GET'])
+def comic_view(request, id):
+    chap = get_object_or_404(Chap, id=id)
+    photos = ChapImage.objects.filter(chap=chap)
+    serializer_image = ChapImageSerializer(photos)
+    return Response(serializer_image.data)
