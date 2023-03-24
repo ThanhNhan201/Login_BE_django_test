@@ -118,12 +118,14 @@ def PutComment(request, comic_id, cmt_id):
                 return Response({'msg': 'this comment was deleted'}, status=400)
         except cmt.DoesNotExist:
             return Response({'msg': 'this comment not found'}, status=400)
-        cmt.edited = True
-        serializer = CommentPutSerializer(cmt, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=200)
-        return Response(serializer.errors, status=400)
+        if request.user.is_authenticated:
+            cmt.edited = True
+            serializer = CommentPutSerializer(cmt, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=200)
+            return Response(serializer.errors, status=400)
+        return Response({'msg': 'user not authenticated'})
 
     elif request.method == 'DELETE':
         try:
@@ -132,12 +134,14 @@ def PutComment(request, comic_id, cmt_id):
                 return Response({'msg': 'this comment was deleted'}, status=400)
         except cmt.DoesNotExist:
             return Response({'msg': 'this comment not found'}, status=400)
-        cmt.removed = True
-        serializer_comment = CommentSerializer(data=cmt)
-        if serializer_comment.is_valid():
-            serializer_comment.save()
-        cmt.save()
-        return Response({'msg': 'deleted'}, status=status.HTTP_204_NO_CONTENT)
+        if request.user.is_authenticated:
+            cmt.removed = True
+            serializer_comment = CommentSerializer(data=cmt)
+            if serializer_comment.is_valid():
+                serializer_comment.save()
+            cmt.save()
+            return Response({'msg': 'deleted'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'msg': 'user not authenticated'})
 
 class RateViewAPI(generics.ListCreateAPIView):
     queryset = Rating.objects.filter(removed=False).order_by('-created_at')
