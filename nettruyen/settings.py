@@ -126,12 +126,45 @@ TEMPLATES = [
 WSGI_APPLICATION = 'nettruyen.wsgi.application'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+
+# DATABASES = {
+
+#     'default': {
+
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+
+#         'NAME': 'login',
+
+#         'USER': 'postgres',
+
+#         'PASSWORD': 'nhan02122001',
+
+#         'HOST': 'localhost',
+
+#         'PORT': '5432',
+
+#     }
+
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'login',  # Tên cơ sở dữ liệu
+        'USER': 'postgres',  # Tên người dùng PostgreSQL
+        'PASSWORD': 'nhan1232456',  # Mật khẩu người dùng PostgreSQL
+        'HOST': '192.168.121.146',  # Địa chỉ host Docker
+        'PORT': '5432',  # Cổng PostgreSQL đã ánh xạ
     }
 }
+
 
 # Postgres database (live)
 
