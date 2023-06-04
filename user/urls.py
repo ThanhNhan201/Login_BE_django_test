@@ -11,9 +11,5 @@ urlpatterns = [
     path('reset_password', views.sendEmailResetPassword, name='token_refresh'),
     path('create_new_password', views.resetPassword),
     path('register', views.create_user),
-    path('follow', views.comicFollow),
     path('logout', views.logout),
-    path('/', views.index),
-
-
 ]

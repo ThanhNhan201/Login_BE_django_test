@@ -6,18 +6,18 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status, generics, permissions
-from user.models import MyUser, Follow
+from user.models import MyUser
 from django.contrib.auth.models import User
-from .serializers import UserSerializer, FollowSerializer, FollowSerializerFull
+from .serializers import UserSerializer
 from .utils import get_tokens_for_user
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken, TokenError
 from django.core.mail import send_mail
 from django.conf import settings
-from comic.models import Comic
 from django.shortcuts import get_object_or_404
 
 # Create your views here.
+
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -28,9 +28,9 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['username'] = user.username
         token['id'] = user.id
         # ...
- 
+
         return token
-    
+
     def validate(self, attrs):
         data = super().validate(attrs)
 
@@ -44,11 +44,14 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         }
 
         return data
+
+
 class MyTokenObtainPairView(TokenObtainPairView):
     try:
         serializer_class = MyTokenObtainPairSerializer
     except Exception as e:
         print(e)
+
 
 @api_view(['POST'])
 def sendEmailResetPassword(request):
@@ -74,34 +77,38 @@ def sendEmailResetPassword(request):
     except Exception as e:
         return Response({"message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
 @api_view(["POST"])
 def resetPassword(request):
     token = request.data.get('token')
     resetPassword = request.data.get('password')
     try:
-        if not token: return JsonResponse({"message": "Please enter token"}) 
-        if not user: return JsonResponse({"message": "Not exist user"}) 
-        if not resetPassword: return JsonResponse({"message": "Please enter password"}) 
-
+        if not token:
+            return JsonResponse({"message": "Please enter token"})
+        if not user:
+            return JsonResponse({"message": "Not exist user"})
+        if not resetPassword:
+            return JsonResponse({"message": "Please enter password"})
 
         payload = jwt.decode(token, "secret", algorithms=['HS256'])
         user_id = payload['user_id']
         user = MyUser.objects.get(pk=user_id)
 
-
         user.set_password(resetPassword)
         user.save()
         tokenFormat = RefreshToken(request.data.get('token'), verify=True)
         tokenFormat.blacklist()
-      
+
         return JsonResponse({"message": "Password changed"}, status=status.HTTP_200_OK)
-   
+
     except TokenError as error:
         return JsonResponse({"message": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
     except jwt.ExpiredSignatureError as error:
         return JsonResponse({"message": str(error.message)})
 
 # POST - /api/users/register
+
+
 @api_view(['POST'])
 def create_user(request):
     username = request.data.get('username')
@@ -123,68 +130,19 @@ def create_user(request):
         return Response({'error': 'Unable to create user. Please try again.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # POST - /api/users/logout
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout(request):
     try:
         refreshToken = request.data.get('refresh_token')
         print(refreshToken)
-        if not refreshToken: return JsonResponse({"message": "Please enter token"}) 
+        if not refreshToken:
+            return JsonResponse({"message": "Please enter token"})
         tokenFormat = RefreshToken(refreshToken, verify=True)
         tokenFormat.blacklist()
 
         return JsonResponse({'message': "Logout!"}, status=status.HTTP_204_NO_CONTENT)
     except TokenError as error:
         return JsonResponse({"message": "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
-
-# GET/POST - api/comics/follow
-@api_view(['GET', 'POST', "DELETE"])
-@permission_classes([IsAuthenticated])
-def comicFollow(request):
-    user = request.user
-    # GET follow comic
-    if request.method == 'GET':
-        follows = user.follow_set.all()
-        serializer = FollowSerializer(instance=follows, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    # POST create follow
-    if request.method == 'POST':
-        if not request.data.get("comic_id"): return JsonResponse({'message': "Please enter comic_id"}, status=status.HTTP_400_BAD_REQUEST)
-        comic_id = request.data.get("comic_id")
-        comic = get_object_or_404(Comic, pk=comic_id)
-        follow = Follow.objects.filter(user=user, comic=comic).first()
-        # If exist follow in DB just change status
-        if follow:
-            follow.unfollow = False
-            follow.save()
-            serializer = FollowSerializer(instance=follow)
-            return JsonResponse({"message": "Success!"}, status=status.HTTP_200_OK)
-
-        
-        # If not exist
-        follow_data = {
-            'user': user.id,
-            'comic': comic_id
-        }
-        
-        follow_serializer = FollowSerializerFull(data=follow_data)
-        if follow_serializer.is_valid():
-            follow_serializer.save()
-            return JsonResponse({"message": "Success!"}, status=status.HTTP_200_OK)
-        return Response(follow_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    if request.method == "DELETE":
-        if not request.data.get("comic_id"): return JsonResponse({'message': "Please enter comic_id"}, status=status.HTTP_400_BAD_REQUEST)
-        comic_id = request.data.get("comic_id")
-        comic = get_object_or_404(Comic, pk=comic_id)
-        follow = Follow.objects.filter(user=user, comic=comic).first()
-        # If exist follow in DB just change status
-        if follow:
-            follow.unfollow = True
-            follow.save()
-            serializer = FollowSerializer(instance=follow)
-            return JsonResponse({"message": "Success!"}, status=status.HTTP_200_OK)
-
-def index(request):
-    return HttpResponse("user")
