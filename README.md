@@ -1,1 +1,1 @@
-docker build -t login-app .docker run -d -p 8000:8000 --name login login-app
+# BUILD IMAGEdocker build -t login-app .# RUNdocker run -d -p 8000:8000 --name login login-app
