@@ -154,6 +154,8 @@ WSGI_APPLICATION = 'nettruyen.wsgi.application'
 
 # }
 
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
